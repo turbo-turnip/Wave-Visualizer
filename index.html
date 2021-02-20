@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>wave stuff</title>
+    <style>
+        body {
+            background: #222;
+        }
+        .inputs {
+            position: absolute;
+            width: 160px;
+            height: 180px;
+            background: #444;
+            right: 0;
+            top: 0;
+            box-shadow: 0 0 12px #00000050;
+            border-radius: .5em;
+            margin: .5em;
+            display: flex;
+            justify-content: flex-start;
+            padding: .3em 0;
+            box-sizing: border-box;
+            align-items: center;
+            flex-direction: column;
+        }
+        .inputs span {
+            color: #fff;
+            text-transform: uppercase;
+            margin-top: .5em;
+        }
+        .inputs input {
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            width: 15px;
+            height: 15px;
+            border: none;
+            background: #0069ad;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border: none;
+            background: #0069ad;
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-progress {
+            background-color: #0079ad;
+            height: 100%;
+            border:none;
+        }
+        input[type="range"]::-moz-range-track {  
+            background-color: #666;
+            border:none;
+            height: 100%;
+        }
+        .oscillate {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 80px;
+            height: 30px;
+            background: #666;
+            border-radius: 2em;
+            position: relative;
+            transition: .4s;
+        }
+        .oscillate::before {
+            content: "OFF";
+            position: absolute;
+            width: 30%;
+            height: 80%;
+            background: #999;
+            border-radius: 50%;
+            top: 50%;
+            left: 4%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #000;
+            transition: .4s;
+        }
+        .oscillate:checked {
+            background: #0089ad;
+        }
+        .oscillate:checked::before {
+            content: "ON";
+            left: 66%;
+            background: #0059ac;
+        }
+        .oscillatorPoint {
+            width: 30px;
+            height: 30px;
+            background: #64c1ff;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .speed {
+            display: none;
+        }
+        .speeddd {
+            display: none;
+        }
+        canvas { 
+            background: radial-gradient(#999, #222);
+        }
+    </style>
+</head>
+<body>
+    <canvas></canvas>
+
+    <div class="inputs">
+        <span>Wave Length</span>
+        <input type="range" class="wave-length" min="1" />
+        <span>Amplitude</span>
+        <input type="range" class="amplitude" min="0" />
+        <span>Oscillate</span>
+        <input type="checkbox" class="oscillate" />
+        <span class="speeddd">Speed</span>
+        <input type="range" class="speed" min="1" max="25" />
+    </div>
+
+    <div class="oscillatorPoint"></div>
+
+    <script>
+        const canvas = document.querySelector("canvas");
+        const ctx = canvas.getContext("2d");
+        const { log } = console;
+        let theta = 0;
+        let speed = 0.05;
+        const inputs = document.querySelectorAll(".inputs input");
+        inputs[0].setAttribute('max', canvas.width);
+        inputs[1].setAttribute('max', canvas.height*1.5);
+
+        let amplitude = 100;
+        let waveLength = 100;
+
+        inputs[0].addEventListener("input", e => waveLength = e.target.value);
+        inputs[1].addEventListener("input", e => amplitude = e.target.value);
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        document.body.style.margin = 0;
+
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.beginPath();
+            ctx.lineWidth = 3;
+            for (let i = 0; i < canvas.width; i += 1) {
+                ctx.lineTo(i, canvas.height/2+amplitude*Math.sin(theta+i/(waveLength/2)));
+            }
+            ctx.stroke();
+            ctx.closePath();
+
+            if (inputs[2].checked) {
+                const point = document.querySelector(".oscillatorPoint");
+
+                point.style.top = canvas.height/2+amplitude*Math.sin(theta+(waveLength/2)) + 'px';
+                point.style.left = 'calc(50% - 40px)';
+
+                inputs[3].style.display = "block";
+                document.querySelector(".inputs").style.height = "220px";
+                document.querySelector(".speeddd").style.display = "block";
+
+                inputs[3].addEventListener("input", e => speed = (e.target.value/100));
+
+                theta += speed;
+            } else {
+                inputs[3].style.display = "none";
+                document.querySelector(".inputs").style.height = "180px";
+                document.querySelector(".speeddd").style.display = "none";
+            }
+
+            requestAnimationFrame(loop);
+
+        }
+
+        loop();
+    </script>
+</body>
+</html>
